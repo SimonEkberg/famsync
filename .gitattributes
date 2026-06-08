@@ -1,0 +1,8 @@
+# Normalize line endings: store LF in the repo, check out native on Windows.
+* text=auto
+
+# Shell scripts MUST be LF or they fail on POSIX shells.
+*.sh text eol=lf
+
+# PowerShell scripts use CRLF (Windows convention).
+*.ps1 text eol=crlf
