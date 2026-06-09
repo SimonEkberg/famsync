@@ -94,10 +94,14 @@ Tests use `@jest/globals` imports and run the domain/use-cases against in-memory
 
 ## Session conventions
 
-- A `SessionStart` hook prints the current git branch/status and the next roadmap step — **read it
-  before acting**. If it reports uncommitted changes, ask before starting new work.
+- **Start of session:** read [docs/DEVLOG.md](docs/DEVLOG.md) **first** — it is the living logbook of
+  the app's current state and what the last session did. Then skim [docs/roadmap.md](docs/roadmap.md).
+- A `SessionStart` hook prints the current git branch/status, the last DEVLOG entry, and the next
+  roadmap step — **read it before acting**. If it reports uncommitted changes, ask before starting new work.
 - Work **plan-first** for non-trivial changes; skip planning only for one-line fixes.
 - Write tests before implementing new domain/use-case logic.
+- **End of session:** add a dated entry (newest first) to [docs/DEVLOG.md](docs/DEVLOG.md) summarizing
+  what changed, decisions made, and the next step; update its "Current state" section if it changed.
 - Conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`). Ask before pushing.
 
 ## How to extend without lock-in (common tasks)

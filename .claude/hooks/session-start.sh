@@ -27,6 +27,12 @@ if [ -f docs/roadmap.md ]; then
   [ -n "$next" ] && echo "Next roadmap step:${next}"
 fi
 
-echo "Reminder: typecheck + test before committing; plan-first for non-trivial changes; ask before pushing."
+# Logbook reminder (read DEVLOG first; show its latest entry)
+if [ -f docs/DEVLOG.md ]; then
+  last="$(grep -m1 '^### ' docs/DEVLOG.md | sed 's/^###[[:space:]]*//')"
+  [ -n "$last" ] && echo "Read docs/DEVLOG.md FIRST (latest entry: ${last})"
+fi
+
+echo "Reminder: update docs/DEVLOG.md at session end; typecheck + test before committing; plan-first; ask before pushing."
 echo "======================================================="
 exit 0

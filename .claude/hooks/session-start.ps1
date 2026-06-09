@@ -7,7 +7,8 @@ $ErrorActionPreference = "Continue"
 Write-Output "==================== SESSION START ===================="
 
 try {
-  if ((& git rev-parse --is-inside-work-tree 2>$null) -eq "true") {
+  $insideRepo = (& git rev-parse --is-inside-work-tree 2>$null)
+  if ($insideRepo -eq "true") {
     Write-Output "Branch: $(& git rev-parse --abbrev-ref HEAD 2>$null)"
     $dirty = (& git status --porcelain 2>$null)
     if ($dirty) {
@@ -31,6 +32,12 @@ if (Test-Path "docs/roadmap.md") {
   if ($next) { Write-Output "Next roadmap step:$next" }
 }
 
-Write-Output "Reminder: typecheck + test before committing; plan-first for non-trivial changes; ask before pushing."
+# Logbook reminder (read DEVLOG first; show its latest entry)
+if (Test-Path "docs/DEVLOG.md") {
+  $last = (Get-Content "docs/DEVLOG.md" | Where-Object { $_ -match "^### " } | Select-Object -First 1) -replace "^###\s*", ""
+  if ($last) { Write-Output "Read docs/DEVLOG.md FIRST (latest entry: $last)" }
+}
+
+Write-Output "Reminder: update docs/DEVLOG.md at session end; typecheck + test before committing; plan-first; ask before pushing."
 Write-Output "======================================================="
 exit 0
