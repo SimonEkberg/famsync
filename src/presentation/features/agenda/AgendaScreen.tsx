@@ -38,7 +38,7 @@ export function AgendaScreen() {
 
       <View style={styles.actions}>
         <Link href="/calendars" asChild>
-          <Pressable style={[styles.button, styles.secondary]}>
+          <Pressable style={StyleSheet.flatten([styles.button, styles.secondary])}>
             <Text style={[styles.buttonText, styles.secondaryText]}>Calendars</Text>
           </Pressable>
         </Link>

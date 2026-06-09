@@ -48,6 +48,14 @@ sharing actually works).
 
 ## Session log (newest first)
 
+### 2026-06-09 — Fix: web crash on Agenda screen (Link `asChild` array style)
+- **Changed:** Flattened the array `style` on the `<Link asChild>` child `Pressable` in
+  `AgendaScreen` with `StyleSheet.flatten`. expo-router's `<Slot>` rejects array `style` on cloned
+  children, which crashed the web target (`npx expo start` → `w`). Set up the Windows toolchain:
+  Node 24 LTS (via nvm), Android Studio, `ANDROID_HOME`, and the Expo Tools + React Native Tools VS Code extensions.
+- **State impact:** none to features — app now renders on web.
+- **Next:** unchanged — M1 durable persistence.
+
 <!--
 Add a new entry ABOVE this comment at the end of each session. Template:
 
