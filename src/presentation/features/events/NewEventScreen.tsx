@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,7 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { CalendarId } from "@/domain/calendar/ids";
 import { useAppData } from "@/presentation/state/AppDataProvider";
 import { formatRange, nextTopOfHour } from "@/presentation/lib/datetime";
@@ -29,9 +28,18 @@ export function NewEventScreen() {
   const [calendarId, setCalendarId] = useState<CalendarId | null>(null);
   const [start, setStart] = useState<Date>(() => nextTopOfHour(new Date()));
   const [durationMs, setDurationMs] = useState<number>(HOUR_MS);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const end = useMemo(() => new Date(start.getTime() + durationMs), [start, durationMs]);
   const selected = calendarId ?? calendars[0]?.id ?? null;
+
+  // Auto-select the first calendar once calendars load (keeps the chip highlighted).
+  useEffect(() => {
+    if (!calendarId && calendars.length > 0) {
+      setCalendarId(calendars[0].id);
+    }
+  }, [calendars, calendarId]);
 
   function shiftStart(deltaMs: number) {
     setStart((current) => new Date(current.getTime() + deltaMs));
@@ -39,15 +47,36 @@ export function NewEventScreen() {
 
   async function onSave() {
     if (!title.trim()) {
-      Alert.alert("Title required", "Please enter a title for the event.");
+      setError("Please enter a title for the event.");
       return;
     }
     if (!selected) {
-      Alert.alert("No calendar", "Create a calendar before adding events.");
+      setError("Create a calendar first, then add events to it.");
       return;
     }
-    await addEvent({ calendarId: selected, title, startsAt: start, endsAt: end, allDay });
-    router.back();
+    setError(null);
+    setSaving(true);
+    try {
+      await addEvent({ calendarId: selected, title, startsAt: start, endsAt: end, allDay });
+      router.back();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save the event.");
+      setSaving(false);
+    }
+  }
+
+  if (calendars.length === 0) {
+    return (
+      <View style={[styles.container, styles.empty]}>
+        <Text style={styles.emptyTitle}>No calendar yet</Text>
+        <Text style={styles.emptyBody}>You need a calendar before you can add events.</Text>
+        <Link href="/calendars" asChild>
+          <Pressable style={styles.linkButton}>
+            <Text style={styles.saveText}>Go to Calendars</Text>
+          </Pressable>
+        </Link>
+      </View>
+    );
   }
 
   return (
@@ -56,9 +85,17 @@ export function NewEventScreen() {
       <TextInput
         style={styles.input}
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(text) => {
+          setTitle(text);
+          if (error) {
+            setError(null);
+          }
+        }}
         placeholder="e.g. Football practice"
         placeholderTextColor={colors.textMuted}
+        autoFocus
+        returnKeyType="done"
+        onSubmitEditing={onSave}
       />
 
       <Text style={styles.label}>Calendar</Text>
@@ -103,8 +140,10 @@ export function NewEventScreen() {
         </View>
       ) : null}
 
-      <Pressable style={styles.save} onPress={onSave}>
-        <Text style={styles.saveText}>Save event</Text>
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <Pressable style={[styles.save, saving && styles.saveDisabled]} onPress={onSave} disabled={saving}>
+        <Text style={styles.saveText}>{saving ? "Saving…" : "Save event"}</Text>
       </Pressable>
       <Text style={styles.hint}>
         A native date/time picker replaces these steppers in a later milestone — see docs/roadmap.md.
@@ -129,6 +168,16 @@ function Stepper(props: { label: string; onPress: () => void; active?: boolean }
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.sm },
+  empty: { alignItems: "center", justifyContent: "center", padding: spacing.xl, gap: spacing.md },
+  emptyTitle: { color: colors.text, fontSize: 20, fontWeight: "700" },
+  emptyBody: { color: colors.textMuted, textAlign: "center" },
+  linkButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    alignItems: "center",
+  },
   label: { color: colors.textMuted, fontSize: 13, marginTop: spacing.md },
   input: {
     backgroundColor: colors.surface,
@@ -164,13 +213,15 @@ const styles = StyleSheet.create({
   stepperActive: { backgroundColor: colors.primary },
   stepperText: { color: colors.text, fontWeight: "600" },
   stepperTextActive: { color: colors.onPrimary },
+  error: { color: colors.danger, fontSize: 14, marginTop: spacing.sm },
   save: {
     backgroundColor: colors.primary,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: "center",
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
+  saveDisabled: { opacity: 0.6 },
   saveText: { color: colors.onPrimary, fontWeight: "700", fontSize: 16 },
   hint: { color: colors.textMuted, fontSize: 12, marginTop: spacing.sm },
 });

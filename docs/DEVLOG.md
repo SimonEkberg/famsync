@@ -48,6 +48,14 @@ sharing actually works).
 
 ## Session log (newest first)
 
+### 2026-06-10 — Fix: silent "can't add event" on web (Alert is a no-op)
+- **Changed:** `NewEventScreen` now shows **inline** validation errors instead of `Alert.alert`
+  (which doesn't render on react-native-web, so failures were silent), auto-selects the first
+  calendar, disables Save while saving, and shows a "Go to Calendars" path when no calendar exists.
+- **State impact:** none to features — adding events now gives visible feedback on web.
+- **Next:** feature — master/merged calendar with Day/Week/Month views (M2) and group sharing
+  (cross-member, needs the sync backend — M3).
+
 ### 2026-06-09 — Fix: web crash on Agenda screen (Link `asChild` array style)
 - **Changed:** Flattened the array `style` on the `<Link asChild>` child `Pressable` in
   `AgendaScreen` with `StyleSheet.flatten`. expo-router's `<Slot>` rejects array `style` on cloned
