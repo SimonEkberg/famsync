@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { CalendarId } from "@/domain/calendar/ids";
+import { FlatList, Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { useAppData } from "@/presentation/state/AppDataProvider";
 import { colors, radius, spacing } from "@/presentation/theme";
 
 export function CalendarsScreen() {
-  const { calendars, createCalendar, shareCalendar } = useAppData();
+  const { calendars, createCalendar, setCalendarVisibility } = useAppData();
   const [name, setName] = useState("");
 
   async function onCreate() {
@@ -13,16 +12,8 @@ export function CalendarsScreen() {
     if (!trimmed) {
       return;
     }
-    await createCalendar(trimmed, colors.primary);
+    await createCalendar(trimmed);
     setName("");
-  }
-
-  async function onShare(calendarId: CalendarId) {
-    const invite = await shareCalendar(calendarId);
-    Alert.alert(
-      "Share calendar",
-      `Invite link:\n${invite.url}\n\n(Local-only for now — wiring a real sync backend is the next milestone. See docs/adr/0003.)`,
-    );
   }
 
   return (
@@ -47,20 +38,34 @@ export function CalendarsScreen() {
         keyExtractor={(calendar) => calendar.id}
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text style={styles.empty}>No calendars yet.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={[styles.swatch, { backgroundColor: item.color }]} />
-            <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={styles.cardMeta}>
-                {item.memberIds.length} {item.memberIds.length === 1 ? "member" : "members"}
-              </Text>
+        ListFooterComponent={
+          <Text style={styles.footer}>
+            “Shared” marks a calendar for your family group. Cross-device sharing (other members
+            actually seeing it) arrives with sync — see docs/roadmap.md.
+          </Text>
+        }
+        renderItem={({ item }) => {
+          const shared = item.visibility === "shared";
+          return (
+            <View style={styles.card}>
+              <View style={[styles.swatch, { backgroundColor: item.color }]} />
+              <View style={styles.cardBody}>
+                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text style={styles.cardMeta}>
+                  {item.memberIds.length} {item.memberIds.length === 1 ? "member" : "members"} ·{" "}
+                  {shared ? "Shared with family" : "Private"}
+                </Text>
+              </View>
+              <View style={styles.toggle}>
+                <Text style={styles.toggleLabel}>Shared</Text>
+                <Switch
+                  value={shared}
+                  onValueChange={(on) => setCalendarVisibility(item.id, on ? "shared" : "private")}
+                />
+              </View>
             </View>
-            <Pressable style={styles.shareButton} onPress={() => onShare(item.id)}>
-              <Text style={styles.shareText}>Share</Text>
-            </Pressable>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -88,6 +93,7 @@ const styles = StyleSheet.create({
   addButtonText: { color: colors.onPrimary, fontWeight: "600" },
   list: { paddingHorizontal: spacing.lg, gap: spacing.sm },
   empty: { color: colors.textMuted, textAlign: "center", marginTop: spacing.xl },
+  footer: { color: colors.textMuted, fontSize: 12, marginTop: spacing.md },
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -102,11 +108,6 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1 },
   cardTitle: { color: colors.text, fontSize: 16, fontWeight: "600" },
   cardMeta: { color: colors.textMuted, fontSize: 13, marginTop: spacing.xs },
-  shareButton: {
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  shareText: { color: colors.text, fontWeight: "600" },
+  toggle: { alignItems: "center", gap: 2 },
+  toggleLabel: { color: colors.textMuted, fontSize: 11 },
 });

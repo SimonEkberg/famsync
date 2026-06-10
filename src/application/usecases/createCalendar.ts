@@ -1,4 +1,5 @@
 import { Calendar, createCalendar as makeCalendar } from "@/domain/calendar/Calendar";
+import { CalendarVisibility } from "@/domain/calendar/CalendarVisibility";
 import { MemberId, toCalendarId } from "@/domain/calendar/ids";
 import { CalendarRepository } from "@/application/ports/CalendarRepository";
 import { IdGenerator } from "@/application/ports/IdGenerator";
@@ -12,6 +13,7 @@ export interface CreateCalendarInput {
   name: string;
   color: string;
   ownerId: MemberId;
+  visibility?: CalendarVisibility;
 }
 
 export async function createCalendar(
@@ -23,6 +25,7 @@ export async function createCalendar(
     name: input.name,
     color: input.color,
     ownerId: input.ownerId,
+    visibility: input.visibility,
   });
   await deps.calendars.save(calendar);
   return calendar;

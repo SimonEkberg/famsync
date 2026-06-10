@@ -15,15 +15,20 @@ earlier work. The `SessionStart` hook surfaces the first unchecked item below as
       via `expo-sqlite` for querying) and wire it in `container.ts`.
 - [ ] Data survives app restarts. No domain/UI changes — adapter swap only.
 
-## M2 — Real date/time UX
-- [ ] Replace the stepper controls with a native picker (`@react-native-community/datetimepicker`).
+## M2 — Calendar views & date/time UX
+- [x] **Day / Week / Month views** with a visual month grid (react-native-calendars), merged across
+      calendars and color-coded, with an include/exclude filter (2026-06-10).
+- [x] **Calendar visibility** model (private / shared) + Shared toggle on the Calendars screen (2026-06-10).
+- [ ] Replace the event stepper controls with a native picker (`@react-native-community/datetimepicker`).
 - [ ] Recurring events (an `RecurrenceRule` value object in the domain + expansion in a use-case).
-- [ ] Day / week / month views.
 
 ## M3 — Family sync (make sharing real)
-- [ ] Choose a backend (decision in a new ADR): Supabase, Firebase, or a CRDT/local-first engine.
+- [x] Backend direction chosen: a **local-first sync engine** (ADR-0005); specific product (e.g.
+      PowerSync / Legend-State / Instant) selected when M3 starts.
 - [ ] Implement `SyncService` + remote repositories behind the existing ports.
-- [ ] Real member identity (replace the single `local-owner` member), invites, and conflict handling.
+- [ ] Real member identity (replace the single `local-owner` member), groups, invites, conflict handling.
+- [ ] Distribute the app to family devices (EAS dev/preview builds, or Expo Go) and verify shared
+      calendars from other members merge into the master view.
 - [ ] Offline queue + reconcile. Core flows must still work fully offline.
 
 ## M4 — Reminders & notifications

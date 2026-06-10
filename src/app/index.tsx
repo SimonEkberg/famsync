@@ -1,5 +1,5 @@
-import { AgendaScreen } from "@/presentation/features/agenda/AgendaScreen";
+import { CalendarScreen } from "@/presentation/features/calendar/CalendarScreen";
 
 export default function IndexRoute() {
-  return <AgendaScreen />;
+  return <CalendarScreen />;
 }

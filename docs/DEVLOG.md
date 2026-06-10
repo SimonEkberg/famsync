@@ -14,15 +14,18 @@
 **Status:** v0 — local-first calendar. Runs on iOS / Android / web via Expo (SDK 56, RN 0.85, React 19, TypeScript).
 
 **What works today**
-- Create calendars; a default **"Family"** calendar is seeded on first launch.
-- Add events: title, calendar, start time + duration (via steppers), all-day toggle.
-- **Agenda** screen lists upcoming events (next 30 days), sorted by start time.
-- **Share** mints a local invite link — UI/flow only; it does **not** sync across devices yet.
+- **Master calendar** (home): **Day / Week / Month** views with a visual month grid
+  (react-native-calendars), color-coded per calendar, showing a **merged view** of all calendars plus a
+  filter to include/exclude each one.
+- Create calendars (each auto-assigned a distinct color); a shared **"Family"** calendar is seeded on first launch.
+- Mark a calendar **Shared with family** vs **Private** (a model flag for future sync; no cross-device effect yet).
+- Add events: title, calendar, start + duration (steppers), all-day — with visible inline validation.
 
 **What's stubbed / not done yet**
-- **Sync:** `LocalOnlySyncService` — no real cross-device sync. (ADR-0003; milestone **M1→M3**.)
+- **Cross-device family sharing:** the "Shared" flag has no effect across devices yet — real
+  distribution/sync needs the backend. (ADR-0003/0005; milestone **M3**, planned around a local-first engine.)
 - **Persistence:** in-memory only — data is lost on app restart. (Milestone **M1**.)
-- **Date/time:** stepper-based entry; no native picker, no recurring events. (Milestone **M2**.)
+- **Event date/time entry:** still stepper-based; no native date/time picker, no recurring events. (Milestone **M2**.)
 - **Identity:** a single hard-coded member `local-owner`; real members arrive with sync. (**M3**.)
 
 **Architecture (one line):** hexagonal ports & adapters — dependencies point inward
@@ -32,7 +35,7 @@
 **How to run:** `npm install` → `npx expo start` (needs **Node ≥ 20.19.4**). Sanity check:
 `npm run typecheck && npm test`.
 
-**Health (last verified 2026-06-09):** typecheck clean; **8 tests passing** (domain + use-cases).
+**Health (last verified 2026-06-10):** typecheck clean; **10 tests passing** (domain + use-cases).
 
 ---
 
@@ -47,6 +50,18 @@ sharing actually works).
 ---
 
 ## Session log (newest first)
+
+### 2026-06-10 — Feature: master calendar (Day/Week/Month, merged, colored) + visibility model
+- **Changed:** New **CalendarScreen** is the home: Day/Week/Month views with a visual month grid
+  (react-native-calendars), per-calendar colors, a **merged** view of all calendars + an include/exclude
+  filter. Added `Calendar.visibility` (private/shared) + `withVisibility`; use-cases `listEventsInRange`
+  and `setCalendarVisibility` (+ tests); a per-calendar color palette; a broad events window in
+  `AppDataProvider`; and a Shared/Private toggle on the Calendars screen. Removed the old Agenda screen.
+- **Decisions:** build the local UX first; plan real family sync (M3) around a **local-first sync engine**
+  (see ADR-0005). New user calendars default to **private**; the seeded "Family" calendar is **shared**.
+- **State impact:** *Current state* updated above. typecheck clean; 10 tests pass.
+- **Next:** M1 (durable persistence) so data survives restarts → M2 (native date/time picker + recurrence)
+  → M3 (local-first sync to make family sharing real across devices).
 
 ### 2026-06-10 — Fix: silent "can't add event" on web (Alert is a no-op)
 - **Changed:** `NewEventScreen` now shows **inline** validation errors instead of `Alert.alert`
